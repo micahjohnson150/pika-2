@@ -27,5 +27,5 @@ ChemicalPotentialIC::value(const Point & /*p*/)
    return _property_uo.equilibriumConcentration(_temperature[_qp]);
   else
     return 0.0;*/
-  return _property_uo.equilibriumConcentration(_temperature[_qp]);
+  return _property_uo.equilibriumConcentration(_temperature[_qp]) * ((1.0-_phase[_qp])/2.0);
 }
