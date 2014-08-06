@@ -40,11 +40,13 @@ private:
 
   VariableValue & _temperature;
 
-  MaterialProperty<Real> & _rho_i;
+  const Real _k_i_input;
+  const Real _c_i_input;
+   MaterialProperty<Real> & _rho_i;
 
-  MaterialProperty<Real> & _kappa_i;
+   MaterialProperty<Real> & _k_i;
 
-  MaterialProperty<Real> & _C_i;
+   MaterialProperty<Real> & _c_i;
 
 };
 

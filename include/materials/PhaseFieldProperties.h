@@ -45,10 +45,6 @@ private:
 
   MaterialProperty<Real> & _interface_velocity;
 
-  MaterialProperty<Real> & _capillary_length;
-
-  MaterialProperty<Real> & _beta;
-
   MaterialProperty<Real> & _lambda;
 
   MaterialProperty<Real> & _tau;
@@ -69,9 +65,44 @@ private:
 
   MaterialProperty<Real> & _rho_vs;
 
-  const Real & _xi;
+  const Real _xi;
 
-  const Real & _d_o;
+  MaterialProperty<Real> & _d_o;
+
+  MaterialProperty<Real> & _d_o_prime;
+
+  MaterialProperty<Real> & _beta;
+
+  MaterialProperty<Real> & _beta_prime;
+ 
+  const Real _convert_meters;
+
+  const Real _gamma;
+
+  const Real _a;
+
+  const Real _k;
+
+  const Real _alpha;
+
+  const Real _m;
+
+  const Real & _w;
+
+  const Real _L_sg;
+
+  MaterialProperty<Real> & _rho_i;
+
+  MaterialProperty<Real> & _ki;
+
+  MaterialProperty<Real> & _ka;
+
+  MaterialProperty<Real> & _ci;
+
+  MaterialProperty<Real> & _ca;
+
+  MaterialProperty<Real> & _dv;
+ 
 };
 
 #endif // PHASEFIELDPROPERTIES_H

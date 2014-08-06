@@ -25,9 +25,11 @@ IceProperties::IceProperties(const std::string & name, InputParameters parameter
     Material(name, parameters),
     PropertyUserObjectInterface(name, parameters),
     _temperature(coupledValue("temperature")),
+    _k_i_input(getParam<Real>("conductivity_ice")),
+    _c_i_input(getParam<Real>("heat_capacity_ice")),
     _rho_i(declareProperty<Real>("density_ice")),
-    _kappa_i(declareProperty<Real>("conductivity_ice")),
-    _C_i(declareProperty<Real>("heat_capacity_ice"))
+    _k_i(declareProperty<Real>("conductivity_ice")),
+    _c_i(declareProperty<Real>("heat_capacity_ice"))
 {
 }
 
@@ -35,15 +37,15 @@ void
 IceProperties::computeQpProperties()
 {
   _rho_i[_qp] = _property_uo.iceDensity(_temperature[_qp]);
-  _kappa_i[_qp] = getParam<Real>("conductivity_ice");
-  _C_i[_qp] = getParam<Real>("heat_capacity_ice");
+  _k_i[_qp] = _k_i_input;
+  _c_i[_qp] = _c_i_input;
 }
 
 InputParameters
 IceProperties::objectParams()
 {
   InputParameters params = emptyInputParameters();
-  params.addParam<Real>("conductivity_ice", 2.29, "Thermal conductivity or air, kappa_i [ W/(m K)]");
+  params.addParam<Real>("conductivity_ice", 2.29, "Thermal conductivity or air, k_i [ W/(m K)]");
   params.addParam<Real>("heat_capacity_ice", 1.8e6, "Heat capacity of air, C_i [J/(m^3 K)]");
   return params;
 }

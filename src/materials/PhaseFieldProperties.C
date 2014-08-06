@@ -29,8 +29,6 @@ PhaseFieldProperties::PhaseFieldProperties(const std::string & name, InputParame
     _phase(coupledValue("phi")),
     _a1((5./8.)*std::sqrt(2.)),
     _interface_velocity(declareProperty<Real>("interface_velocity")),
-    _capillary_length(declareProperty<Real>("capillary_length")),
-    _beta(declareProperty<Real>("interface_kinetic_coefficient")),
     _lambda(declareProperty<Real>("lambda")),
     _tau(declareProperty<Real>("tau")),
     _conductivity(declareProperty<Real>("conductivity")),
@@ -42,52 +40,49 @@ PhaseFieldProperties::PhaseFieldProperties(const std::string & name, InputParame
     _specific_humidity_ratio(declareProperty<Real>("specific_humidity_ratio")),
     _rho_vs(declareProperty<Real>("equilibrium_water_vapor_concentration_at_saturation")),
     _xi(_property_uo.temporalScale()),
-    _d_o(_property_uo.getParam<Real>("capillary_length"))
+    _d_o(declareProperty<Real>("capillary_length")),
+    _d_o_prime(declareProperty<Real>("capillary_length_prime")),
+    _beta(declareProperty<Real>("interface_kinetic_coefficient")),
+    _beta_prime(declareProperty<Real>("beta_prime")),
+    _convert_meters(_property_uo.getParam<Real>("conversion_factor")),
+    _gamma(_property_uo.getParam<Real>("interface_free_energy")),
+    _a(_property_uo.getParam<Real>("mean_molecular_spacing")),
+    _k(_property_uo.getParam<Real>("boltzmann")),
+    _alpha(_property_uo.getParam<Real>("condensation_coefficient")),
+    _m(_property_uo.getParam<Real>("mass_water_molecule")),
+    _w(_property_uo.getParam<Real>("interface_thickness")),
+    _L_sg(_property_uo.getParam<Real>("latent_heat")),
+    _rho_i(getMaterialProperty<Real>("density_ice")),
+    _ki(getMaterialProperty<Real>("conductivity_ice")),
+    _ka(getMaterialProperty<Real>("conductivity_air")),
+    _ci(getMaterialProperty<Real>("heat_capacity_ice")),
+    _ca(getMaterialProperty<Real>("heat_capacity_air")),
+    _dv(getMaterialProperty<Real>("water_vapor_diffusion_coefficient"))
+
 {
 }
 
 void
 PhaseFieldProperties::computeQpProperties()
 {
-  Real convert_meters = _property_uo.getParam<Real>("conversion_factor");
-  Real & gamma = getMaterialProperty<Real>("interface_free_energy")[_qp];
-  Real & a = getMaterialProperty<Real>("mean_molecular_spacing")[_qp];
-  Real & k = getMaterialProperty<Real>("boltzmann")[_qp];
-  Real & alpha = getMaterialProperty<Real>("condensation_coefficient")[_qp];
-  Real & m = getMaterialProperty<Real>("mass_water_molecule")[_qp];
-  const Real & w =getMaterialProperty<Real>("interface_thickness")[_qp];
-  const Real & L_sg = (1.0/std::pow(convert_meters,2.0)) *  getMaterialProperty<Real>("latent_heat")[_qp];
-
   _rho_vs[_qp] = _property_uo.equilibriumWaterVaporConcentrationAtSaturation(_temperature[_qp]);
+  //_capillary_length[_qp] =  (_rho_vs[_qp]/(rho_i[_qp])) * (gamma * std::pow(a, 3.) ) / (k * _property_uo.referenceTemp());
+  _d_o_prime[_qp] =  (_rho_vs[_qp]/( _rho_i[_qp])) * _d_o[_qp];
 
-  MaterialProperty<Real> & rho_i = getMaterialProperty<Real>("density_ice");
+  //_beta[_qp] = (1./(alpha)) * std::sqrt((2.*libMesh::pi*m) / (k * _property_uo.referenceTemp()));
+  _beta_prime[_qp] =(_rho_vs[_qp]/( _rho_i[_qp])) * _beta[_qp];
 
-  MaterialProperty<Real> & ki = getMaterialProperty<Real>("conductivity_ice");
-  MaterialProperty<Real> & ka = getMaterialProperty<Real>("conductivity_air");
+  _lambda[_qp] = (_a1 * _w  / _d_o_prime[_qp]);
 
-  MaterialProperty<Real> & ci = getMaterialProperty<Real>("heat_capacity_ice");
-  MaterialProperty<Real> & ca = getMaterialProperty<Real>("heat_capacity_air");
+  _tau[_qp] = (_beta_prime[_qp] * _w * _lambda[_qp]) / _a1;
 
-  MaterialProperty<Real> & dv = getMaterialProperty<Real>("water_vapor_diffusion_coefficient");
+  _conductivity[_qp] = _convert_meters * (_ki[_qp] * (1. + _phase[_qp]) / 2. + _ka[_qp] * (1. - _phase[_qp]) / 2.);
 
-  _capillary_length[_qp] =  (_rho_vs[_qp]/(rho_i[_qp])) * (gamma * std::pow(a, 3.) ) / (k * _property_uo.referenceTemp());
+  _heat_capacity[_qp] =(1.0/(_convert_meters)) * _ci[_qp] * (1. + _phase[_qp]) / 2. + _ca[_qp] * (1. - _phase[_qp]) / 2.;
 
-  _beta[_qp] = (1./(alpha)) * std::sqrt((2.*libMesh::pi*m) / (k * _property_uo.referenceTemp()));
+  _diffusion_coefficient[_qp] = _convert_meters * _convert_meters * _dv[_qp] * (1. - _phase[_qp]) / 2. ;
 
-  _lambda[_qp] = (_a1 * w  / _capillary_length[_qp]);
-
-  _tau[_qp] = (_beta[_qp] * w * _lambda[_qp]) / _a1;
-
-  _conductivity[_qp] = (convert_meters) * (ki[_qp] * (1. + _phase[_qp]) / 2. + ka[_qp] * (1. - _phase[_qp]) / 2.);
-
-  _heat_capacity[_qp] =(1.0/(convert_meters)) * ci[_qp] * (1. + _phase[_qp]) / 2. + ca[_qp] * (1. - _phase[_qp]) / 2.;
-
-  _diffusion_coefficient[_qp] = (convert_meters) * (convert_meters) * dv[_qp] * (1. - _phase[_qp]) / 2. ;
-
-//  if(_diffusion_coefficient[_qp] < 0.0)
-//    _diffusion_coefficient[_qp] = 0.0;
-
-  _interface_thickness_squared[_qp] = (convert_meters*convert_meters) *  w*w;
+  _interface_thickness_squared[_qp] = _convert_meters * _convert_meters * _w * _w;
 
   _equilibrium_concentration[_qp] =  _property_uo.equilibriumConcentration(_temperature[_qp]);
 

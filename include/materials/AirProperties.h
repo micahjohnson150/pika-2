@@ -42,11 +42,17 @@ private:
 
   VariableValue & _temperature;
 
+  const Real _k_a_input;
+
+  const Real _c_a_input;
+
+  const Real _D_v_input;
+
   MaterialProperty<Real> & _rho_a;
 
-  MaterialProperty<Real> & _kappa_a;
+  MaterialProperty<Real> & _k_a;
 
-  MaterialProperty<Real> & _C_a;
+  MaterialProperty<Real> & _c_a;
 
   MaterialProperty<Real> & _D_v;
 };

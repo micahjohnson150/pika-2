@@ -26,9 +26,12 @@ AirProperties::AirProperties(const std::string & name, InputParameters parameter
     Material(name, parameters),
     PropertyUserObjectInterface(name, parameters),
     _temperature(coupledValue("temperature")),
+    _k_a_input(getParam<Real>("conductivity_air")),
+    _c_a_input(getParam<Real>("heat_capacity_air")),
+    _D_v_input(getParam<Real>("water_vapor_diffusion_coefficient")),
     _rho_a(declareProperty<Real>("density_air")),
-    _kappa_a(declareProperty<Real>("conductivity_air")),
-    _C_a(declareProperty<Real>("heat_capacity_air")),
+    _k_a(declareProperty<Real>("conductivity_air")),
+    _c_a(declareProperty<Real>("heat_capacity_air")),
     _D_v(declareProperty<Real>("water_vapor_diffusion_coefficient"))
 {
 }
@@ -38,11 +41,11 @@ AirProperties::computeQpProperties()
 {
   _rho_a[_qp] = _property_uo.airDensity(_temperature[_qp]);
 
-  _kappa_a[_qp] = getParam<Real>("conductivity_air");
+  _k_a[_qp] = _k_a_input;
 
-  _C_a[_qp] = getParam<Real>("heat_capacity_air");
+  _c_a[_qp] = _c_a_input;
 
-  _D_v[_qp] = getParam<Real>("water_vapor_diffusion_coefficient");
+  _D_v[_qp] = _D_v_input;
 }
 
 InputParameters
