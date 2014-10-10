@@ -44,6 +44,7 @@
 #include "AntiTrapping.h"
 #include "IbexShortwaveForcingFunction.h"
 #include "PikaHomogenizedKernel.h"
+#include "PikaConvection.h"
 
 // AuxKernels
 #include "ErrorFunctionAux.h"
@@ -135,6 +136,7 @@ PikaApp::registerObjects(Factory & factory)
   registerKernel(AntiTrapping);
   registerKernel(IbexShortwaveForcingFunction);
   registerKernel(PikaHomogenizedKernel);
+  registerKernel(PikaConvection);
 
   // InitialConditions
   registerInitialCondition(KaempferAnalyticPhaseIC);
